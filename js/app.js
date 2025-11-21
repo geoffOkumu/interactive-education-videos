@@ -235,16 +235,21 @@ class VideoApp {
      */
     
     /**
+     * Calculate and update total duration
+     */
+    updateTotalDuration() {
+        const totalDuration = this.chapters.reduce((sum, ch) => sum + ch.duration, 0);
+        this.controlsManager.setDuration(totalDuration);
+    }
+
+    /**
      * Add a new chapter dynamically
      * @param {Object} chapter - Chapter data
      */
     addChapter(chapter) {
         this.chapters.push(chapter);
         this.chaptersManager.loadChapters(this.chapters);
-        
-        // Update total duration
-        const totalDuration = this.chapters.reduce((sum, ch) => sum + ch.duration, 0);
-        this.controlsManager.setDuration(totalDuration);
+        this.updateTotalDuration();
     }
 
     /**
@@ -256,10 +261,7 @@ class VideoApp {
         if (index >= 0 && index < this.chapters.length) {
             this.chapters[index] = chapter;
             this.chaptersManager.loadChapters(this.chapters);
-            
-            // Update total duration
-            const totalDuration = this.chapters.reduce((sum, ch) => sum + ch.duration, 0);
-            this.controlsManager.setDuration(totalDuration);
+            this.updateTotalDuration();
         }
     }
 

@@ -12,6 +12,8 @@ class CanvasManager {
         this.isTyping = false;
         this.typingInterval = null;
         this.images = {};
+        this.fontFamily = "'Permanent Marker', cursive";
+        this.fontSize = 32;
         
         this.init();
     }
@@ -75,13 +77,16 @@ class CanvasManager {
         // Draw text up to character index
         if (slide.text && charIndex > 0) {
             const text = slide.text.substring(0, charIndex);
-            this.drawText(text, slide.x || 100, slide.y || 100, slide.fontSize || 32, true);
+            const x = slide.x || 100;
+            const y = slide.y || 100;
+            const fontSize = slide.fontSize || 32;
+            
+            this.drawText(text, x, y, fontSize, true);
             
             // Add cursor if currently typing
             if (this.isTyping && charIndex < slide.text.length) {
-                const cursorX = slide.x + this.ctx.measureText(text).width + 5;
-                const cursorY = slide.y;
-                this.drawCursor(cursorX, cursorY, slide.fontSize || 32);
+                const cursorPos = this.calculateCursorPosition(text, x, y, fontSize);
+                this.drawCursor(cursorPos.x, cursorPos.y, fontSize);
             }
         }
         
@@ -89,6 +94,29 @@ class CanvasManager {
         if (slide.images && slide.images.length > 0 && (!slide.text || charIndex >= slide.text.length)) {
             this.drawImages(slide.images);
         }
+    }
+
+    /**
+     * Calculate cursor position accounting for multi-line text
+     * @param {string} text - Text up to cursor
+     * @param {number} x - Starting X position
+     * @param {number} y - Starting Y position
+     * @param {number} fontSize - Font size
+     * @returns {Object} Cursor position {x, y}
+     */
+    calculateCursorPosition(text, x, y, fontSize) {
+        const maxWidth = this.canvas.width - x - 100;
+        const lines = this.wrapText(text, maxWidth);
+        
+        if (lines.length === 0) {
+            return { x: x, y: y };
+        }
+        
+        const lastLine = lines[lines.length - 1];
+        const lineY = y + ((lines.length - 1) * (fontSize + 10));
+        const lineX = x + this.ctx.measureText(lastLine).width + 5;
+        
+        return { x: lineX, y: lineY };
     }
 
     /**
@@ -126,7 +154,7 @@ class CanvasManager {
      * @param {boolean} multiline - Support multiline text
      */
     drawText(text, x, y, fontSize, multiline = true) {
-        this.ctx.font = `${fontSize}px 'Permanent Marker', cursive`;
+        this.ctx.font = `${fontSize}px ${this.fontFamily}`;
         this.ctx.fillStyle = '#f5f5f5';
         this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
         this.ctx.shadowBlur = 2;

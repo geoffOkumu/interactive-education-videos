@@ -10,6 +10,7 @@ class ControlsManager {
         this.totalDuration = 0;
         this.volume = 0.7;
         this.isMuted = false;
+        this.previousVolume = 0.7;
         this.hideTimeout = null;
         this.progressUpdateInterval = null;
         

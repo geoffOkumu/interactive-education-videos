@@ -8,6 +8,7 @@ class ChaptersManager {
         this.chapters = [];
         this.currentChapterIndex = 0;
         this.isOpen = false;
+        this.chapterStartTimes = [];
         
         this.elements = {
             selector: document.getElementById('chapterSelector'),
@@ -53,7 +54,21 @@ class ChaptersManager {
      */
     loadChapters(chapters) {
         this.chapters = chapters;
+        this.calculateChapterStartTimes();
         this.renderChapterList();
+    }
+
+    /**
+     * Calculate and cache chapter start times
+     */
+    calculateChapterStartTimes() {
+        this.chapterStartTimes = [];
+        let cumulativeTime = 0;
+        
+        for (let i = 0; i < this.chapters.length; i++) {
+            this.chapterStartTimes.push(cumulativeTime);
+            cumulativeTime += this.chapters[i].duration;
+        }
     }
 
     renderChapterList() {
@@ -190,12 +205,12 @@ class ChaptersManager {
      * @param {number} currentTime - Current playback time
      */
     updateChapterByTime(currentTime) {
-        let cumulativeTime = 0;
-        
-        for (let i = 0; i < this.chapters.length; i++) {
-            cumulativeTime += this.chapters[i].duration;
+        // Use cached start times for efficiency
+        for (let i = 0; i < this.chapterStartTimes.length; i++) {
+            const startTime = this.chapterStartTimes[i];
+            const endTime = startTime + this.chapters[i].duration;
             
-            if (currentTime < cumulativeTime) {
+            if (currentTime >= startTime && currentTime < endTime) {
                 if (this.currentChapterIndex !== i) {
                     this.currentChapterIndex = i;
                     this.updateActiveChapter();
